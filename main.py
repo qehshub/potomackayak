@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-import pydeck as pdk
+import plotly.graph_objects as go
 import requests
 import json
 import streamlit as st
@@ -13,26 +13,8 @@ def get_lvl():
     lvl = jsonData['value']['timeSeries'][0]['values'][0]['value'][values]['value']
     return lvl
 
-    
-st.title('Potomac Playspot Map')
-
 level = get_lvl()
-st.write(f'Water level at Little Falls: {level} ft')
-
-data = {'lat': [38.99688, 38.97771, 38.97771, 38.97809, 38.97848, 
-                38.99489, 38.97965, 38.996983, 38.978755, 38.996391, 38.996226, 
-                38.996100, 38.975291, 38.992183, 38.979475, 38.994412, 38.977973, 
-                38.990300], 
-        'lon': [-77.25243, -77.2359, -77.23589, -77.23646, -77.23433, -77.24867, -77.23566,
-                -77.252523, -77.235530, -77.252891, -77.252862, -77.253001, -77.221383,
-                -77.248250, -77.232174, -77.249742, -77.237038, -77.247688],
-        'min': [2.6,5.2,5.1,4.1,6.8,6.1,7.3,2.6,2.7,3.6,3.3,2.7,4.9,3.9,6.0,
-                3.5,2.7,2.5],
-        'max': [3.3,5.4,7.0,4.8,8,6.6,8.8,2.8,4.0,3.8,3.6,3.0,5.4,4.8,7.6,
-                3.9,4.2,4.3]
-        }
-
-df = pd.DataFrame(data)
+df = pd.read_csv('https://raw.githubusercontent.com/andGarc/potomackayak/dev/data/locations.csv')
 
 def set_color(df, level):
     level = float(level)
@@ -42,51 +24,79 @@ def set_color(df, level):
 
 df = set_color(df, level)
 
-layers = [
-        # above 
-        pdk.Layer('ScatterplotLayer',
-        data=df[df['color'] == 'blue'],
-        get_position='[lon,lat]',
-        get_color='[0, 128, 255]',
-        get_radius=50),
+red = df[df.color == 'red']
+blue = df[df.color == 'blue']
+green = df[df.color == 'green']
 
-        # below
-        pdk.Layer('ScatterplotLayer',
-        data=df[df['color'] == 'red'],
-        get_position='[lon,lat]',
-        get_color='[245, 66, 66]',
-        get_radius=50),
+fig = go.Figure()
 
-        # just right
-        pdk.Layer('ScatterplotLayer',
-        data=df[df['color'] == 'green'],
-        get_position='[lon,lat]',
-        get_color='[66, 245, 123]',
-        get_radius=50)
-    ]
+fig.add_trace(go.Scattermapbox(
+        lat=red.lat,
+        lon=red.lon,
+        mode='markers',
+        marker=go.scattermapbox.Marker(
+            size=8,
+            color='rgb(245, 66, 66)',
+            opacity=0.7
+        )
+    ))
+
+fig.add_trace(go.Scattermapbox(
+        lat=blue.lat,
+        lon=blue.lon,
+        mode='markers',
+        marker=go.scattermapbox.Marker(
+            size=8,
+            color='rgb(0, 128, 255)',
+            opacity=0.7
+        ),
+        hoverinfo='none'
+    ))
+
+fig.add_trace(go.Scattermapbox(
+        lat=green.lat,
+        lon=green.lon,
+        mode='markers',
+        marker=go.scattermapbox.Marker(
+            size=8,
+            color='rgb(66, 245, 123)',
+            opacity=0.7
+        ),
+        hoverinfo='none'
+    ))
+
+fig.update_mapboxes(
+    center=dict(lon=-77.241 , lat=38.987),
+    zoom=12,
+    style="white-bg",
+    layers=[
+        {
+            "below": 'traces',
+            "sourcetype": "raster",
+            "sourceattribution": "United States Geological Survey",
+            "source": [
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+            ]
+        }
+      ]
+)
+
+
+st.title('Potomac Playspot Map')
+st.write(f'Water level at Little Falls: {level} ft')
 
 left_col, left_middle_col, righ_middle_col, right_col = st.beta_columns(4)
 
 if left_col.button('All'):
-    layers = layers
+    pass
 
 if left_middle_col.button('Recommended'):
-    layers = layers[2:]
+    pass
 
 if righ_middle_col.button('High'):
-    layers = layers[:1]
+    pass
 
 if right_col.button('Low'):
-    layers = layers[1:2]
+    pass
 
-
-st.pydeck_chart(pdk.Deck(
-    #map_style='mapbox://styles/angarcia/ck18kp1td0iwr1cphsbyh6lvr',
-    map_style='mapbox://styles/mapbox/light-v9',
-    initial_view_state=pdk.ViewState(
-        latitude=38.987,
-        longitude=-77.241,
-        zoom=13
-    ),
-    layers = layers
-))
+st.plotly_chart(fig, use_container_width=True)
