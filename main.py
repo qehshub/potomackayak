@@ -38,7 +38,8 @@ fig.add_trace(go.Scattermapbox(
             size=8,
             color='rgb(245, 66, 66)',
             opacity=0.7
-        )
+        ),
+        hoverinfo='name'
     ))
 
 fig.add_trace(go.Scattermapbox(
@@ -50,7 +51,7 @@ fig.add_trace(go.Scattermapbox(
             color='rgb(0, 128, 255)',
             opacity=0.7
         ),
-        hoverinfo='none'
+        hoverinfo='name'
     ))
 
 fig.add_trace(go.Scattermapbox(
@@ -62,7 +63,7 @@ fig.add_trace(go.Scattermapbox(
             color='rgb(66, 245, 123)',
             opacity=0.7
         ),
-        hoverinfo='none'
+        hoverinfo='name'
     ))
 
 fig.update_mapboxes(
