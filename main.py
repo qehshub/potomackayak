@@ -31,24 +31,33 @@ layers = [
         data=df[df['color'] == 'blue'],
         get_position='[lon,lat]',
         get_color='[0, 128, 255]',
-        get_radius=50,
-        pickable=True,),
+        get_radius=10,
+        pickable=True,
+        radius_scale=2,
+        radius_min_pixels=10,
+        radius_max_pixels=50),
 
         # below
         pdk.Layer('ScatterplotLayer',
         data=df[df['color'] == 'red'],
         get_position='[lon,lat]',
         get_color='[245, 66, 66]',
-        get_radius=50,
-        pickable=True,),
+        get_radius=10,
+        pickable=True,
+        radius_scale=2,
+        radius_min_pixels=10,
+        radius_max_pixels=50),
 
         # just right
         pdk.Layer('ScatterplotLayer',
         data=df[df['color'] == 'green'],
         get_position='[lon,lat]',
         get_color='[66, 245, 123]',
-        get_radius=50,
-        pickable=True,)
+        get_radius=10,
+        pickable=True,
+        radius_scale=2,
+        radius_min_pixels=10,
+        radius_max_pixels=50)
     ]
 
 
