@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 import requests
 import json
 import streamlit as st
+import pydeck as pdk
+from PIL import Image
 
 
 def get_lvl():
@@ -24,80 +26,63 @@ def set_color(df, level):
 
 df = set_color(df, level)
 
-red = df[df.color == 'red']
-blue = df[df.color == 'blue']
-green = df[df.color == 'green']
+layers = [
+        # above 
+        pdk.Layer('ScatterplotLayer',
+        data=df[df['color'] == 'blue'],
+        get_position='[lon,lat]',
+        get_color='[0, 128, 255]',
+        get_radius=50,
+        pickable=True,),
 
-fig = go.Figure()
+        # below
+        pdk.Layer('ScatterplotLayer',
+        data=df[df['color'] == 'red'],
+        get_position='[lon,lat]',
+        get_color='[245, 66, 66]',
+        get_radius=50,
+        pickable=True,),
 
-fig.add_trace(go.Scattermapbox(
-        lat=red.lat,
-        lon=red.lon,
-        mode='markers',
-        marker=go.scattermapbox.Marker(
-            size=8,
-            color='rgb(245, 66, 66)',
-            opacity=0.7
-        ),
-        hoverinfo='name'
-    ))
+        # just right
+        pdk.Layer('ScatterplotLayer',
+        data=df[df['color'] == 'green'],
+        get_position='[lon,lat]',
+        get_color='[66, 245, 123]',
+        get_radius=50,
+        pickable=True,)
+    ]
 
-fig.add_trace(go.Scattermapbox(
-        lat=blue.lat,
-        lon=blue.lon,
-        mode='markers',
-        marker=go.scattermapbox.Marker(
-            size=8,
-            color='rgb(0, 128, 255)',
-            opacity=0.7
-        ),
-        hoverinfo='name'
-    ))
 
-fig.add_trace(go.Scattermapbox(
-        lat=green.lat,
-        lon=green.lon,
-        mode='markers',
-        marker=go.scattermapbox.Marker(
-            size=8,
-            color='rgb(66, 245, 123)',
-            opacity=0.7
-        ),
-        hoverinfo='name'
-    ))
-
-fig.update_mapboxes(
-    center=dict(lon=-77.241 , lat=38.987),
-    zoom=12,
-    style="white-bg",
-    layers=[
-        {
-            "below": 'traces',
-            "sourcetype": "raster",
-            "sourceattribution": "United States Geological Survey",
-            "source": [
-                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-            ]
-        }
-      ]
-)
-
+# image = Image.open('/Users/andresgarcia/data/gf_potomacise.jpg')
+# box = (100, 100, 400, 400)
+# region = image.crop(box)
+# st.image(region, caption='Great Falls of the Potomac')
 
 st.title('Potomac Playspot Map')
-st.write(f'Water level at Little Falls: {level} ft')
+st.markdown(f'Water level at [Little Falls](https://water.weather.gov/ahps2/hydrograph.php?gage=brkm2&wfo=lwx): {level} ft.')
 
-left_col, left_middle_col, righ_middle_col, right_col = st.beta_columns(4)
+st.sidebar.title('Potomac Playspot Map')
+if st.sidebar.button('All'):
+    layers = layers
+if st.sidebar.button('Recommended'):
+    layers = layers[2:]
+if st.sidebar.button('High'):
+    layers = layers[:1]
+if st.sidebar.button('Low'):
+    layers = layers[1:2]
 
-if left_col.button('All'):
-    pass
-
-if left_middle_col.button('Recommended'):
-    pass
-
-if righ_middle_col.button('High'):
-    pass
-
-if right_col.button('Low'):
-    pass
-
-st.plotly_chart(fig, use_container_width=True)
+st.pydeck_chart(pdk.Deck(
+    #map_style='mapbox://styles/angarcia/ck18kp1td0iwr1cphsbyh6lvr',
+    map_style='mapbox://styles/mapbox/light-v9',
+    initial_view_state=pdk.ViewState(
+        latitude=38.987,
+        longitude=-77.241,
+        zoom=13
+    ),
+    layers = layers,
+    tooltip={"html": "<b>{name}</b> -- Min: {min}ft, Max: {max}ft",
+    "style": {
+        "backgroundColor": "steelblue",
+        "color": "white"
+    }}
+))
