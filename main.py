@@ -129,5 +129,3 @@ try:
     c3.text(b4_ls)
 except:
     pass
-
-st.write("DB username:", st.secrets["weather_api_key"])
