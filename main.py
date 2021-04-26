@@ -9,6 +9,16 @@ from PIL import Image
 # Use the full page instead of a narrow central column
 st.set_page_config(layout="wide")
 
+def get_weather():
+    with open("api_file.bin", mode='rb') as file:
+        fileContent = file.read().decode('ascii')
+        
+    url = f"http://api.openweathermap.org/data/2.5/weather?lat=38.9741&lon=-77.16329&appid={fileContent}&units=imperial"
+    response = requests.get(url).text
+    jsonData = json.loads(response)
+    weather = [jsonData['name'], jsonData['weather'][0]['description'], jsonData['main']['temp'],
+                jsonData['main']['feels_like'], jsonData['wind']['speed'], jsonData['main']['humidity']]
+    return weather
 
 def get_lvl():
     re = requests.get("https://waterservices.usgs.gov/nwis/iv/?site=01646500&period=PT2H&format=json&variable=00065").text
@@ -17,6 +27,7 @@ def get_lvl():
     lvl = jsonData['value']['timeSeries'][0]['values'][0]['value'][values]['value']
     return lvl
 
+weather = get_weather()
 level = get_lvl()
 df = pd.read_csv('https://raw.githubusercontent.com/andGarc/potomackayak/dev/data/locations.csv')
 
@@ -86,7 +97,6 @@ b4_ls = "\n".join(b4_df)
 
 
 st.pydeck_chart(pdk.Deck(
-    #map_style='mapbox://styles/angarcia/ck18kp1td0iwr1cphsbyh6lvr',
     map_style='mapbox://styles/mapbox/light-v9',
     initial_view_state=pdk.ViewState(
         latitude=38.987,
@@ -102,18 +112,24 @@ st.pydeck_chart(pdk.Deck(
 ))
 
 # below map
-c1, c2, c3, c4 = st.beta_columns((2, 1, 1, 1))
+c1, c2, c3= st.beta_columns((1, 1, 1))
 
-c1.write("Water Level")
-c2.write("Weather :cyclone:")
-c3.write(":sunglasses:")
+c1.write("Weather :cyclone:")
+c1.text(f"{weather[0]}, MD, USA | {weather[1]}")
+c1.text(f"{weather[2]} F | Feels like: {weather[3]} F")
+c1.text(f"Wind: {weather[4]} mph | Humidity: {weather[5]}%")
+
+
+
+c2.write(":sunglasses:")
 try:
-    c3.text(b3_ls)
+    c2.text(b3_ls)
 except:
     pass
-c4.write(":expressionless:")
+
+c3.write(":expressionless:")
 try:
-    c4.text(b4_ls)
+    c3.text(b4_ls)
 except:
     pass
 
