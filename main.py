@@ -6,6 +6,9 @@ import streamlit as st
 import pydeck as pdk
 from PIL import Image
 
+# Use the full page instead of a narrow central column
+st.set_page_config(layout="wide")
+
 
 def get_lvl():
     re = requests.get("https://waterservices.usgs.gov/nwis/iv/?site=01646500&period=PT2H&format=json&variable=00065").text
@@ -60,24 +63,27 @@ layers = [
         radius_max_pixels=50)
     ]
 
-
-# image = Image.open('/Users/andresgarcia/data/gf_potomacise.jpg')
-# box = (100, 100, 400, 400)
-# region = image.crop(box)
-# st.image(region, caption='Great Falls of the Potomac')
-
 st.title('Potomac Playspot Map')
-st.markdown(f'Water level at [Little Falls](https://water.weather.gov/ahps2/hydrograph.php?gage=brkm2&wfo=lwx): {level} ft.')
+st.markdown(f'Water level at [Little Falls](https://water.weather.gov/ahps2/hydrograph.php?gage=brkm2&wfo=lwx): {level} ft')
 
-st.sidebar.title('Potomac Playspot Map')
-if st.sidebar.button('All'):
+# Space out the buttons
+b1, b2, b3, b4 = st.beta_columns((1, 1, 1, 1))
+
+if b1.button('All'):
     layers = layers
-if st.sidebar.button('Recommended'):
+if b2.button('Recommended'):
     layers = layers[2:]
-if st.sidebar.button('High'):
+if b3.button('High'):
     layers = layers[:1]
-if st.sidebar.button('Low'):
+if b4.button('Low'):
     layers = layers[1:2]
+
+b3_df = df[df.color == 'green'].name.to_list()
+b3_ls = "\n".join(b3_df)
+
+b4_df = df[(df.color == 'red') | (df.color == 'blue')].name.to_list()
+b4_ls = "\n".join(b4_df)
+
 
 st.pydeck_chart(pdk.Deck(
     #map_style='mapbox://styles/angarcia/ck18kp1td0iwr1cphsbyh6lvr',
@@ -94,3 +100,20 @@ st.pydeck_chart(pdk.Deck(
         "color": "white"
     }}
 ))
+
+# below map
+c1, c2, c3, c4 = st.beta_columns((2, 1, 1, 1))
+
+c1.write("Water Level")
+c2.write("Weather :cyclone:")
+c3.write(":sunglasses:")
+try:
+    c3.text(b3_ls)
+except:
+    pass
+c4.write(":expressionless:")
+try:
+    c4.text(b4_ls)
+except:
+    pass
+
