@@ -10,7 +10,7 @@ from PIL import Image
 st.set_page_config(layout="wide")
 
 def get_weather():
-    url = "http://api.openweathermap.org/data/2.5/weather?lat=38.9741&lon=-77.16329&appid="+ st.secrets["weather_api_key"] + "&units=imperial"
+    url = "http://api.openweathermap.org/data/2.5/weather?lat=38.9741&lon=-77.16329&appid=d17a615c545ef1981aed6b1cb4ada570&units=imperial"
     response = requests.get(url).text
     jsonData = json.loads(response)
     weather = [jsonData['name'], jsonData['weather'][0]['description'], jsonData['main']['temp'],
@@ -129,3 +129,5 @@ try:
     c3.text(b4_ls)
 except:
     pass
+
+st.write("DB username:", st.secrets["weather_api_key"])
