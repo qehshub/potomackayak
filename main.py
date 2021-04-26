@@ -10,7 +10,7 @@ from PIL import Image
 st.set_page_config(layout="wide")
 
 def get_weather():
-    key = st.secrets["WEATHER_API_KEY"]
+    key = st.secrets["weather_api_key"]
     url = f"http://api.openweathermap.org/data/2.5/weather?lat=38.9741&lon=-77.16329&appid=d17a615c545ef1981aed6b1cb4ada570&units=imperial"
     response = requests.get(url).text
     jsonData = json.loads(response)
