@@ -18,7 +18,6 @@ def get_weather():
                 jsonData['main']['feels_like'], jsonData['wind']['speed'], jsonData['main']['humidity']]
     return weather
 
-@st.cache(suppress_st_warning=True)
 def get_lvl():
     re = requests.get("https://waterservices.usgs.gov/nwis/iv/?site=01646500&period=PT2H&format=json&variable=00065").text
     jsonData = json.loads(re)
