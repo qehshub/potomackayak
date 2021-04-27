@@ -9,6 +9,7 @@ from PIL import Image
 # Use the full page instead of a narrow central column
 st.set_page_config(layout="wide")
 
+@st.cache(suppress_st_warning=True)
 def get_weather():
     url = "http://api.openweathermap.org/data/2.5/weather?lat=38.9741&lon=-77.16329&appid=d17a615c545ef1981aed6b1cb4ada570&units=imperial"
     response = requests.get(url).text
@@ -17,6 +18,7 @@ def get_weather():
                 jsonData['main']['feels_like'], jsonData['wind']['speed'], jsonData['main']['humidity']]
     return weather
 
+@st.cache(suppress_st_warning=True)
 def get_lvl():
     re = requests.get("https://waterservices.usgs.gov/nwis/iv/?site=01646500&period=PT2H&format=json&variable=00065").text
     jsonData = json.loads(re)
