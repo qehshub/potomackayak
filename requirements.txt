@@ -1,0 +1,9 @@
+numpy @ file:///Users/runner/miniforge3/conda-bld/numpy_1616933188420/work
+pandas==1.2.4
+Pillow @ file:///Users/runner/miniforge3/conda-bld/pillow_1617888781108/work
+plotly @ file:///home/conda/feedstock_root/build_artifacts/plotly_1610471242275/work
+plotly-express==0.4.1
+pycparser @ file:///home/conda/feedstock_root/build_artifacts/pycparser_1593275161868/work
+pydeck @ file:///home/conda/feedstock_root/build_artifacts/pydeck_1618346240213/work
+requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1608156231189/work
+streamlit @ file:///home/conda/feedstock_root/build_artifacts/streamlit_1617992169914/work
