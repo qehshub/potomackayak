@@ -4,10 +4,69 @@ import requests
 import json
 import streamlit as st
 import pydeck as pdk
+import time
+import datetime
+import plotly.express as px
 from PIL import Image
+from bs4 import BeautifulSoup
 
 # Use the full page instead of a narrow central column
 st.set_page_config(layout="wide")
+
+
+
+### *********************************************
+# generate level chart
+# request data from api
+response = requests.get("https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=brkm2&output=tabular&time_zone=edt")
+
+soup = BeautifulSoup(response.text, 'html.parser')
+h_elem = soup.find_all('tr')
+time = []
+level_ft = []
+level_kcfs = []
+
+for sec in h_elem:
+  for e in sec:
+    try:
+      if '/' in e.text:
+        time.append(e.text)
+      elif 'ft' in e.text:
+        lvl = e.text[:-2]
+        level_ft.append(lvl)
+      elif 'kcfs' in e.text:
+        lvl = e.text[:-4]
+        level_kcfs.append(lvl)
+    except:
+      pass
+
+df_lvl = pd.DataFrame({'time': time[2:], 'level_ft': level_ft, 'level_kcfs': level_kcfs})
+
+def split_time_date(r):
+  tt = r.time.split()
+  tt[0] = tt[0] + "/2021"
+  tt[1] = tt[1].split(":")
+  tmp = tt[1]
+  tt[1] = tmp[0]
+  tt.append(tmp[1])
+
+  str1 = f"{tt[0]} {tt[1]}:{tt[2]}"
+  element = datetime.datetime.strptime(str1,"%m/%d/%Y %H:%M")
+  r.timestamp = element
+
+df_lvl["timestamp"] = ""
+df_lvl.apply(split_time_date, axis=1)
+
+now = datetime.datetime.now() - datetime.timedelta(hours=4)
+df_lvl = df_lvl.sort_values(by=['timestamp'])
+df_lvl['obs_pred'] = df_lvl['timestamp'].apply(lambda x: "Observed" if (x < now) else "Predicted")
+df_lvl['level_ft'] = df_lvl['level_ft'].astype(float)
+
+fig = px.line(df_lvl, x="timestamp", y="level_ft", color = "obs_pred", hover_name="level_ft",
+        line_shape="spline", render_mode="svg")
+
+### *********************************************
+
 
 def get_weather():
     key = st.secrets["weather_api_key"]
@@ -88,14 +147,12 @@ if b3.button('High'):
 if b4.button('Low'):
     layers = layers[1:2]
 
-b3_df = df[df.color == 'green'].name.to_list()
-b3_ls = "\n".join(b3_df)
+b3_df = df[df.color == 'green'].name.reset_index(drop=True)
+b4_df = df[(df.color == 'red') | (df.color == 'blue')].name.reset_index(drop=True)
 
-b4_df = df[(df.color == 'red') | (df.color == 'blue')].name.to_list()
-b4_ls = "\n".join(b4_df)
+bb1, bb2 = st.beta_columns((3, 1))
 
-
-st.pydeck_chart(pdk.Deck(
+bb1.pydeck_chart(pdk.Deck(
     map_style='mapbox://styles/mapbox/light-v9',
     initial_view_state=pdk.ViewState(
         latitude=38.987,
@@ -110,6 +167,10 @@ st.pydeck_chart(pdk.Deck(
     }}
 ))
 
+# next to map
+bb2.plotly_chart(fig)
+bb2.write("a")
+
 # below map
 c1, c2, c3= st.beta_columns((1, 1, 1))
 
@@ -122,12 +183,12 @@ c1.text(f"Wind: {weather[4]} mph | Humidity: {weather[5]}%")
 
 c2.write(":sunglasses:")
 try:
-    c2.text(b3_ls)
+    c2.dataframe(b3_df)
 except:
     pass
 
 c3.write(":expressionless:")
 try:
-    c3.text(b4_ls)
+    c3.dataframe(b4_df, height=180)
 except:
     pass
