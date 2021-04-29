@@ -65,6 +65,13 @@ df_lvl['level_ft'] = df_lvl['level_ft'].astype(float)
 fig = px.line(df_lvl, x="timestamp", y="level_ft", color = "obs_pred", hover_name="level_ft",
         line_shape="spline", render_mode="svg")
 
+fig.update_layout(
+
+    autosize = True,
+    width=800,
+    height=250
+)
+
 ### *********************************************
 
 
@@ -136,21 +143,28 @@ st.title('Potomac Playspot Map')
 st.markdown(f'Water level at [Little Falls](https://water.weather.gov/ahps2/hydrograph.php?gage=brkm2&wfo=lwx): {level} ft')
 
 # Space out the buttons
-b1, b2, b3, b4 = st.beta_columns((1, 1, 1, 1))
+my_expander = st.beta_expander("Expand me to see map filters...", expanded=True)
+with my_expander:
+    b1, b2, b3, b4 = st.beta_columns((1, 1, 1, 1))
+    b_all = b1.button('All')
+    b_rec = b2.button('Recommended')
+    b_high = b3.button('High')
+    b_low = b4.button('Low')
 
-if b1.button('All'):
+
+if b_all:
     layers = layers
-if b2.button('Recommended'):
+if b_rec:
     layers = layers[2:]
-if b3.button('High'):
+if b_high:
     layers = layers[:1]
-if b4.button('Low'):
+if b_low:
     layers = layers[1:2]
 
 b3_df = df[df.color == 'green'].name.reset_index(drop=True)
 b4_df = df[(df.color == 'red') | (df.color == 'blue')].name.reset_index(drop=True)
 
-bb1, bb2 = st.beta_columns((3, 1))
+bb1, bb2 = st.beta_columns(((2,1)))
 
 bb1.pydeck_chart(pdk.Deck(
     map_style='mapbox://styles/mapbox/light-v9',
@@ -168,27 +182,30 @@ bb1.pydeck_chart(pdk.Deck(
 ))
 
 # next to map
-bb2.plotly_chart(fig)
-bb2.write("a")
+bb2.write("Weather :cyclone:")
+bb2.text(f"{weather[0]}, MD, USA | {weather[1]}")
+bb2.text(f"{weather[2]} F | Feels like: {weather[3]} F")
+bb2.text(f"Wind: {weather[4]} mph | Humidity: {weather[5]}%")
+
+bb2.write("Go here :sunglasses:")
+try:
+    bb2.dataframe(b3_df)
+except:
+    pass
+
+bb2.write(":expressionless: maybe avoid...")
+try:
+    bb2.dataframe(b4_df, height=120)
+except:
+    pass
+
 
 # below map
-c1, c2, c3= st.beta_columns((1, 1, 1))
+col1, col2, col3 = st.beta_columns([1,6,1])
+with col1:
+    st.write("")
 
-c1.write("Weather :cyclone:")
-c1.text(f"{weather[0]}, MD, USA | {weather[1]}")
-c1.text(f"{weather[2]} F | Feels like: {weather[3]} F")
-c1.text(f"Wind: {weather[4]} mph | Humidity: {weather[5]}%")
+with col2:
+    st.plotly_chart(fig)
 
 
-
-c2.write(":sunglasses:")
-try:
-    c2.dataframe(b3_df)
-except:
-    pass
-
-c3.write(":expressionless:")
-try:
-    c3.dataframe(b4_df, height=180)
-except:
-    pass
