@@ -94,7 +94,7 @@ def get_lvl():
 weather = get_weather()
 level = get_lvl()
 df = pd.read_csv('https://raw.githubusercontent.com/andGarc/potomackayak/main/data/locations.csv')
-print(df)
+
 @st.cache(suppress_st_warning=True)
 def set_color(df, level):
     level = float(level)
@@ -195,16 +195,12 @@ except:
 
 bb2.write(":expressionless: maybe avoid...")
 try:
-    bb2.dataframe(b4_df, height=120)
+    bb2.dataframe(b4_df, height=100)
 except:
     pass
 
 
 # below map
-col1, col2 = st.beta_columns((3,1))
-with col1:
-    st.plotly_chart(fig)
-
-    
+st.plotly_chart(fig, use_container_width=True)
 
 
