@@ -93,8 +93,8 @@ def get_lvl():
 
 weather = get_weather()
 level = get_lvl()
-df = pd.read_csv('https://raw.githubusercontent.com/andGarc/potomackayak/dev/data/locations.csv')
-
+df = pd.read_csv('https://raw.githubusercontent.com/andGarc/potomackayak/main/data/locations.csv')
+print(df)
 @st.cache(suppress_st_warning=True)
 def set_color(df, level):
     level = float(level)
@@ -169,9 +169,9 @@ bb1, bb2 = st.beta_columns(((2,1)))
 bb1.pydeck_chart(pdk.Deck(
     map_style='mapbox://styles/mapbox/light-v9',
     initial_view_state=pdk.ViewState(
-        latitude=38.987,
-        longitude=-77.241,
-        zoom=13
+        latitude=38.978937,
+        longitude=-77.154023,
+        zoom=10
     ),
     layers = layers,
     tooltip={"html": "<b>{name}</b> -- Min: {min}ft, Max: {max}ft",
